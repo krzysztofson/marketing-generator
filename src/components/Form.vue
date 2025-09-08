@@ -1,7 +1,11 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { useMarketingStore } from '@/stores/marketing'
 
 const router = useRouter()
+const marketing = useMarketingStore()
+const { brief, loading, error } = storeToRefs(marketing)
 
 defineProps({
   msg: {
@@ -10,7 +14,8 @@ defineProps({
   }
 })
 
-const goToFormEdit = () => {
+const goToFormEdit = async () => {
+  await marketing.generateFromBrief()
   router.push('/form-edit')
 }
 </script>
@@ -23,12 +28,17 @@ const goToFormEdit = () => {
       name="brief"
       id="brief"
       rows="10"
+      v-model="brief"
+      :disabled="loading"
     ></textarea>
+    <div class="mt-2 text-sm text-red-400" v-if="error">{{ error }}</div>
     <button
       @click="goToFormEdit"
-      class="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
+      class="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors disabled:opacity-60"
+      :disabled="loading || !brief?.trim()"
     >
-      Next
+      <span v-if="loading">Generating…</span>
+      <span v-else>Next</span>
     </button>
   </div>
 </template>

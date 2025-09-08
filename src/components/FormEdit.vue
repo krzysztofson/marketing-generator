@@ -1,7 +1,11 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { useMarketingStore } from '@/stores/marketing'
 
 const router = useRouter()
+const marketing = useMarketingStore()
+const { title, description, cta, imageUrl } = storeToRefs(marketing)
 
 defineProps({
   msg: {
@@ -16,7 +20,12 @@ const goBack = () => {
 
 const handleGenerate = () => {
   // Placeholder for generate functionality
-  console.log('Generate clicked')
+  console.log('Download clicked', {
+    title: title.value,
+    description: description.value,
+    cta: cta.value,
+    imageUrl: imageUrl.value
+  })
 }
 </script>
 
@@ -30,6 +39,7 @@ const handleGenerate = () => {
           type="text"
           class="block border border-gray-300 rounded-md p-2 w-full bg-gray-800 mb-4"
           placeholder="Title"
+          v-model="title"
         />
 
         <label class="block text-sm font-medium mb-2">Description</label>
@@ -37,20 +47,38 @@ const handleGenerate = () => {
           class="block border border-gray-300 rounded-md p-2 w-full bg-gray-800 mb-4"
           rows="6"
           placeholder="Description"
+          v-model="description"
         ></textarea>
 
         <input
           type="text"
           class="block border border-gray-300 rounded-md p-2 w-full bg-gray-800 mb-6"
           placeholder="Call to action text"
+          v-model="cta"
         />
         <input
           type="text"
           class="block border border-gray-300 rounded-md p-2 w-full bg-gray-800 mb-6"
           placeholder="Image URL"
+          v-model="imageUrl"
         />
       </div>
-      <div>id</div>
+      <div>
+        <div class="aspect-[1/1] bg-white relative overflow-hidden">
+          <img src="../assets/logo.svg" class="w-1/2 absolute left-4 top-4" alt="logo" />
+          <div
+            class="absolute inset-0 w-3/4 bg-gradient-to-r from-blue-300/50 to-transparent pointer-events-none"
+          ></div>
+          <div class="absolute top-1/2 left-4 z-10">
+            <h3 class="text-2xl font-semibold text-gray-900">{{ title }}</h3>
+            <p class="mt-2 text-gray-800">{{ description }}</p>
+            <button class="mt-4 bg-blue-600 text-white px-3 py-1 rounded">
+              {{ cta || 'Call to Action' }}
+            </button>
+          </div>
+          <img v-if="imageUrl" :src="imageUrl" class="object-cover w-full h-full" alt="preview" />
+        </div>
+      </div>
     </div>
 
     <div class="flex gap-4">
@@ -64,7 +92,7 @@ const handleGenerate = () => {
         @click="handleGenerate"
         class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition-colors"
       >
-        Generate
+        Download
       </button>
     </div>
   </div>
