@@ -14,6 +14,29 @@ defineProps({
   }
 })
 
+marketing.setBrief(`Cel
+Zwiększyć świadomość i sprzedaż kawy ziarnistej premium od lokalnej palarni.
+
+Grupa docelowa
+Miłośnicy kawy w wieku 25–45 lat, ceniący jakość, smak i lokalne produkty.
+
+Kluczowy przekaz
+Twoja codzienna kawa może smakować jak z najlepszej kawiarni — bez wychodzenia z domu.
+
+Ton i styl
+Aromatyczny, elegancki, pobudzający zmysły.
+
+Treść posta (wersja robocza)
+„☕ Odkryj smak, który budzi każdy poranek! Nasza świeżo palona kawa premium dostarczana prosto do Twojego domu. Zamów i poczuj różnicę! 🌿 #KawaPremium"
+
+Kierunek dla grafiki
+  •	Zdjęcie filiżanki kawy z parującą pianką i ziarnami obok
+  •	Ciepła kolorystyka (brązy, złoto, beż)
+  •	Krótki tekst na grafice: „Smak, który budzi"
+
+Call to Action
+👉 „Zamów teraz"`)
+
 const goToFormEdit = async () => {
   await marketing.generateFromBrief()
   router.push('/form-edit')
@@ -27,7 +50,7 @@ const goToFormEdit = async () => {
       class="block border border-gray-300 rounded-md p-2 w-full bg-gray-800 mt-6"
       name="brief"
       id="brief"
-      rows="10"
+      rows="20"
       v-model="brief"
       :disabled="loading"
     ></textarea>
