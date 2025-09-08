@@ -27,6 +27,35 @@ export const useMarketingStore = defineStore('marketing', {
       this.imageUrl = ''
       this.error = null
     },
+    async fetchUnsplashImage(query = 'business marketing') {
+      const unsplashKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY
+
+      if (!unsplashKey) {
+        // Fallback to picsum if no Unsplash key
+        return 'https://picsum.photos/800/600'
+      }
+
+      try {
+        const response = await fetch(
+          `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&orientation=landscape&w=800&h=600`,
+          {
+            headers: {
+              Authorization: `Client-ID ${unsplashKey}`
+            }
+          }
+        )
+
+        if (!response.ok) {
+          throw new Error(`Unsplash API error: ${response.status}`)
+        }
+
+        const data = await response.json()
+        return data.urls?.regular || 'https://picsum.photos/800/600'
+      } catch (error) {
+        console.warn('Failed to fetch from Unsplash, using fallback:', error)
+        return 'https://picsum.photos/800/600'
+      }
+    },
     async generateFromBrief() {
       const apiKey = import.meta.env.VITE_OPENAI_API_KEY
       const configuredModel = import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
@@ -39,16 +68,18 @@ export const useMarketingStore = defineStore('marketing', {
         const stub = {
           title: 'Your Marketing Title',
           description: 'A concise, compelling description based on your brief.',
-          cta: 'Get Started',
-          imageUrl: 'https://picsum.photos/800/800'
+          cta: 'Get Started'
         }
+        // Get image from Unsplash based on the brief
+        const imageUrl = await this.fetchUnsplashImage(this.brief || 'business marketing')
+        stub.imageUrl = imageUrl
         this.setFromJson(stub)
         this.loading = false
         return stub
       }
 
       try {
-        const prompt = `You are a marketing copy generator. Given the following product/company brief, produce ONLY a compact JSON object with these exact keys: title, description, cta, imageUrl from unsplash.com.\n\nBrief:\n${this.brief}\n\nConstraints:\n- Keep title under 70 characters.\n- Description 1-3 sentences.\n- cta is a short call-to-action label.\n- imageUrl ONLY and REAL image URL from unsplash.com.\n- Output JSON only, no markdown, no extra text.`
+        const prompt = `You are a marketing copy generator. Given the following product/company brief, produce ONLY a compact JSON object with these exact keys: title, description, cta.\n\nBrief:\n${this.brief}\n\nConstraints:\n- Keep title under 70 characters.\n- Description 1-3 sentences.\n- cta is a short call-to-action label.\n- Output JSON only, no markdown, no extra text.`
         const callApi = async (model, useResponseFormat = true) => {
           const body = {
             model,
@@ -114,8 +145,9 @@ export const useMarketingStore = defineStore('marketing', {
           throw new Error('Invalid JSON returned from model')
         }
 
-        // Force fixed image URL regardless of model output
-        parsed.imageUrl = 'https://picsum.photos/800/800'
+        // Fetch image from Unsplash based on the generated content
+        const searchQuery = parsed.title || parsed.description || this.brief || 'business marketing'
+        parsed.imageUrl = await this.fetchUnsplashImage(searchQuery)
 
         this.setFromJson(parsed)
         return parsed
@@ -128,9 +160,10 @@ export const useMarketingStore = defineStore('marketing', {
           fallback = {
             title: 'Sample Campaign',
             description: 'This is a sample description because generation failed.',
-            cta: 'Learn More',
-            imageUrl: 'https://picsum.photos/800/800'
+            cta: 'Learn More'
           }
+          // Get fallback image from Unsplash
+          fallback.imageUrl = await this.fetchUnsplashImage('business marketing')
           this.setFromJson(fallback)
         }
         return (

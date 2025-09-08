@@ -18,7 +18,14 @@ A Vue.js 3 application that generates marketing content using OpenAI's GPT model
   - Title (under 70 characters)
   - Description (1-3 sentences)
   - Call-to-action text
-  - Image URL (automatically set to reliable placeholder)
+  - Image URL (fetched from Unsplash API based on content)
+
+### 🖼️ Image Integration
+
+- **Unsplash API**: Fetches relevant, high-quality images based on generated content
+- **Smart Search**: Uses title, description, or brief as search terms for relevant imagery
+- **Fallback System**: Graceful degradation to placeholder images when Unsplash is unavailable
+- **Automatic Optimization**: Images optimized for 800x600 landscape format
 
 ### 🎨 Visual Customization
 
@@ -66,12 +73,18 @@ A Vue.js 3 application that generates marketing content using OpenAI's GPT model
    cp .env.example .env.local
    ```
 
-   Edit `.env.local` and add your OpenAI API key:
+   Edit `.env.local` and add your API keys:
 
    ```
    VITE_OPENAI_API_KEY=sk-your-openai-api-key-here
    VITE_OPENAI_MODEL=gpt-4o-mini
+   VITE_UNSPLASH_ACCESS_KEY=your-unsplash-access-key-here
    ```
+
+   **Getting API Keys:**
+
+   - **OpenAI**: Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+   - **Unsplash**: Create an app at [Unsplash Developers](https://unsplash.com/developers) and copy the Access Key
 
 4. **Start development server**
 
@@ -108,12 +121,14 @@ the best coffee experience at home.
 
 ### Environment Variables
 
-| Variable              | Description         | Default       | Required |
-| --------------------- | ------------------- | ------------- | -------- |
-| `VITE_OPENAI_API_KEY` | Your OpenAI API key | -             | No\*     |
-| `VITE_OPENAI_MODEL`   | OpenAI model to use | `gpt-4o-mini` | No       |
+| Variable                   | Description              | Default       | Required |
+| -------------------------- | ------------------------ | ------------- | -------- |
+| `VITE_OPENAI_API_KEY`      | Your OpenAI API key      | -             | No\*     |
+| `VITE_OPENAI_MODEL`        | OpenAI model to use      | `gpt-4o-mini` | No       |
+| `VITE_UNSPLASH_ACCESS_KEY` | Your Unsplash Access Key | -             | No\*\*   |
 
-\*Without an API key, the app uses sample content for demonstration.
+\*Without an OpenAI API key, the app uses sample content for demonstration.
+\*\*Without an Unsplash API key, the app uses placeholder images from picsum.photos.
 
 ### Model Options
 
@@ -154,20 +169,28 @@ The app uses Pinia for state management with a centralized `marketing` store:
   title: '',           // Generated title
   description: '',     // Generated description
   cta: '',            // Generated call-to-action
-  imageUrl: '',       // Generated image URL
+  imageUrl: '',       // Fetched from Unsplash API
   loading: false,     // Generation state
   error: null         // Error messages
 }
 ```
 
-### API Integration
+### API Integrations
 
-The OpenAI integration includes:
+**OpenAI Integration:**
 
-- **Multiple Retry Attempts**: Tries different models and configurations
-- **Response Format Handling**: Uses structured JSON output when supported
-- **Error Recovery**: Provides fallback content on API failures
-- **Security**: API calls made from frontend (consider backend proxy for production)
+- Multiple Retry Attempts: Tries different models and configurations
+- Response Format Handling: Uses structured JSON output when supported
+- Error Recovery: Provides fallback content on API failures
+
+**Unsplash Integration:**
+
+- Smart Image Search: Uses generated content as search terms
+- Automatic Optimization: Fetches landscape-oriented images (800x600)
+- Fallback System: Uses placeholder images when Unsplash is unavailable
+- Rate Limiting: Respects Unsplash API guidelines
+
+**Security Note**: API calls are made from frontend (consider backend proxy for production)
 
 ## Customization Options
 
@@ -239,6 +262,7 @@ Ensure these environment variables are set in your hosting platform:
 
 - `VITE_OPENAI_API_KEY`
 - `VITE_OPENAI_MODEL`
+- `VITE_UNSPLASH_ACCESS_KEY`
 
 ### Hosting Options
 
@@ -254,12 +278,13 @@ Ensure these environment variables are set in your hosting platform:
 
 ### Security Considerations
 
-⚠️ **Important**: The current implementation makes API calls from the frontend, exposing your API key to users. For production use, consider:
+⚠️ **Important**: The current implementation makes API calls from the frontend, exposing your API keys to users. For production use, consider:
 
-1. **Backend Proxy**: Create a backend service to proxy OpenAI requests
-2. **API Key Rotation**: Regularly rotate your OpenAI API keys
-3. **Rate Limiting**: Implement request throttling
-4. **Input Validation**: Sanitize user inputs before sending to OpenAI
+1. **Backend Proxy**: Create a backend service to proxy OpenAI and Unsplash requests
+2. **API Key Rotation**: Regularly rotate your OpenAI and Unsplash API keys
+3. **Rate Limiting**: Implement request throttling for both APIs
+4. **Input Validation**: Sanitize user inputs before sending to external APIs
+5. **CORS Configuration**: Ensure proper CORS settings for API endpoints
 
 ## Contributing
 
@@ -292,8 +317,15 @@ Ensure these environment variables are set in your hosting platform:
 
 **Images Not Loading**
 
-- The app uses `https://picsum.photos/800/800` for reliable image placeholders
-- Check network connectivity and firewall settings
+- The app fetches images from Unsplash API when configured, or falls back to `https://picsum.photos/800/600`
+- Check your Unsplash API key is valid and within rate limits
+- Verify network connectivity and firewall settings
+
+**Unsplash API Issues**
+
+- Verify your Unsplash Access Key is correct
+- Check you haven't exceeded the rate limit (50 requests/hour for demo apps)
+- Ensure your Unsplash app is approved for production if needed
 
 **Build Errors**
 
@@ -320,9 +352,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - **OpenAI** for providing the GPT API
+- **Unsplash** for providing high-quality, royalty-free images
 - **Vue.js Team** for the excellent framework
 - **Tailwind CSS** for the utility-first CSS framework
-- **Unsplash/Picsum** for placeholder images
+- **Picsum Photos** for reliable placeholder images
 
 ## Support
 
